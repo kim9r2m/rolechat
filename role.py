@@ -12,7 +12,7 @@ st.sidebar.header("🔑 API & Role Settings")
 
 api_key = st.sidebar.text_input("Enter your OpenAI API Key:", type="password")
 
-# Define roles and their specialized personas
+# ---------- Role Definitions ----------
 roles = {
     "🎬 Video Director": {
         "system": (
@@ -54,12 +54,22 @@ roles = {
         ),
         "description": "You interpret artworks and explain their aesthetic and emotional meaning."
     },
+    "🧶 Knitting & Crochet Expert": {
+        "system": (
+            "You are a master of knitting and crochet. You understand yarn types, stitch techniques, and garment construction. "
+            "You teach people how to improve their craft, offering detailed guidance about patterns, texture combinations, "
+            "and project planning. Use a warm, encouraging, and patient tone. Give tips about tools, color palettes, "
+            "and creative inspiration for both beginners and experienced crafters."
+        ),
+        "description": "You share creative, practical guidance on knitting and crochet projects."
+    },
 }
 
+# ---------- Sidebar Role Selection ----------
 selected_role = st.sidebar.selectbox("Choose a role:", list(roles.keys()))
 st.sidebar.markdown(f"**{roles[selected_role]['description']}**")
 
-# ---------- Main Interface ----------
+# ---------- Main Input ----------
 user_input = st.text_area("💬 Enter your question or idea:", placeholder="e.g. How can I create impressive artwork?")
 
 # ---------- Response Generation ----------
