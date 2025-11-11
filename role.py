@@ -64,4 +64,4 @@ if st.button("Generate Response"):
 
 # --- Footer ---
 st.markdown("---")
-st.caption("Built for 'Art & Advanced Big Data' · Prof. Jahwan Koo (SKKU)")
+
