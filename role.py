@@ -2,10 +2,10 @@ import streamlit as st
 from openai import OpenAI
 
 # ---------- Streamlit App Configuration ----------
-st.set_page_config(page_title="🎭 Role-based Creative Chatbot", page_icon="🎭", layout="centered")
+st.set_page_config(page_title="🎭 Role-based Creative Chatbot", page_icon="🎭", layout="wide")
 
-st.title("🎭 Role-based Creative Chatbot")
-st.write("Select a creative role and ask your question!")
+st.title("🎭 Role-based Creative Chatbot + Image Studio")
+st.write("Choose your creative role, ask questions, or visualize your ideas with AI!")
 
 # ---------- Sidebar Settings ----------
 st.sidebar.header("🔑 API & Role Settings")
@@ -20,7 +20,7 @@ roles = {
             "and emotional rhythm. You give feedback as if you are guiding a film production team. "
             "Use cinematic language, scene composition advice, and visual storytelling ideas."
         ),
-        "description": "You are a video director who visualizes stories and directs how they are brought to life on screen."
+        "description": "You visualize stories and direct how they are brought to life on screen."
     },
     "💃 Dance Instructor": {
         "system": (
@@ -69,39 +69,72 @@ roles = {
 selected_role = st.sidebar.selectbox("Choose a role:", list(roles.keys()))
 st.sidebar.markdown(f"**{roles[selected_role]['description']}**")
 
-# ---------- Main Input ----------
-user_input = st.text_area("💬 Enter your question or idea:", placeholder="e.g. How can I create impressive artwork?")
+# ---------- Tabs for Chat & Image ----------
+tab_chat, tab_image = st.tabs(["💬 Chat Assistant", "🖼️ Image Studio"])
 
-# ---------- Response Generation ----------
-if st.button("Generate Response"):
-    if not api_key:
-        st.warning("Please enter your OpenAI API key.")
-    elif not user_input.strip():
-        st.warning("Please enter a question or idea.")
-    else:
-        try:
-            client = OpenAI(api_key=api_key)
+# ---------- Chat Assistant ----------
+with tab_chat:
+    st.subheader(f"{selected_role} — Creative Chat Assistant")
+    user_input = st.text_area("💬 Enter your question or idea:", placeholder="e.g. How can I make my short film emotionally powerful?")
 
-            system_prompt = roles[selected_role]["system"]
+    if st.button("✨ Generate Response"):
+        if not api_key:
+            st.warning("Please enter your OpenAI API key.")
+        elif not user_input.strip():
+            st.warning("Please enter a question or idea.")
+        else:
+            try:
+                client = OpenAI(api_key=api_key)
+                system_prompt = roles[selected_role]["system"]
 
-            with st.spinner("🎨 Crafting your creative response..."):
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_input},
-                    ],
-                    temperature=0.85,
-                    max_tokens=700,
-                )
+                with st.spinner("🎬 Crafting your creative response..."):
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_input},
+                        ],
+                        temperature=0.85,
+                        max_tokens=700,
+                    )
 
-                answer = response.choices[0].message.content
+                    answer = response.choices[0].message.content
 
-            st.success(f"{selected_role} says:")
-            st.markdown(answer)
+                st.success(f"{selected_role} says:")
+                st.markdown(answer)
 
-        except Exception as e:
-            st.error(f"⚠️ An error occurred: {e}")
+            except Exception as e:
+                st.error(f"⚠️ An error occurred: {e}")
+
+# ---------- Image Studio ----------
+with tab_image:
+    st.subheader(f"{selected_role} — Image Studio")
+    image_prompt = st.text_area("🎨 Describe what image you want to generate:",
+                                placeholder="e.g. A cozy studio filled with colorful yarn and knitting tools")
+
+    image_size = st.select_slider("🖼️ Image Size", options=["512x512", "1024x1024", "1792x1024", "1024x1792"], value="1024x1024")
+
+    if st.button("🧵 Generate Image"):
+        if not api_key:
+            st.warning("Please enter your OpenAI API key.")
+        elif not image_prompt.strip():
+            st.warning("Please enter a description or idea for the image.")
+        else:
+            try:
+                client = OpenAI(api_key=api_key)
+
+                with st.spinner("🎨 Creating your image..."):
+                    image_response = client.images.generate(
+                        model="gpt-image-1",
+                        prompt=f"{roles[selected_role]['description']} — {image_prompt}",
+                        size=image_size
+                    )
+                    image_url = image_response.data[0].url
+
+                st.image(image_url, caption=f"Generated by {selected_role}", use_container_width=True)
+
+            except Exception as e:
+                st.error(f"⚠️ Image generation failed: {e}")
 
 # ---------- Footer ----------
 st.markdown("---")
